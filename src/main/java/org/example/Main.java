@@ -47,37 +47,33 @@ class BankAccount {
         accounts.put(username, account);
     }
 
-    public void deposit(double amount) { //here would need to check max 2 digits after comma
+    public boolean deposit(double amount) { //here would need to check max 2 digits after comma
         if (amount > 0) {
             balance += amount;
-            System.out.println("Deposit successful. Current balance: " + balance);
+            return true;
         } else {
-            System.out.println("Invalid deposit amount.");
+            return false;
         }
     }
 
     public boolean withdraw(double amount) {
         if (amount >= 0 && amount <= balance) {
             balance -= amount;
-            System.out.println("You have successfully taken out "+amount+" Eur. Remaining balance: " + balance);
             return true;
         } else {
-            System.out.println("Insufficient funds. Current balance: " + balance);
             return false;
         }
     }
-
     public void printBalance() {
         System.out.println("Current balance " + balance);
     }
 
-    /*public void transfer(double amount, String username){
-        //  this.balance=balance-amount;
-        if(withdraw(amount)){
-           String accountTo=getAccountNumberByUsername(username);
-                deposit(amount);
-        }
-    }*/
+    public void transfer(double amount, String username){
+        BankAccount accountTo=accounts.get(username);
+        if((withdraw(amount)) && accountTo.deposit(amount)){
+                System.out.println("Transfer successful!");}
+        else System.out.println("Transfer cancelled.");
+    }
     public String getInfo() {
         return "\nAccount number: " + accountNumber + "\nBalance: " + balance + "\n";
     }
@@ -163,6 +159,8 @@ class BankAccount {
         do {
             System.out.println("Select your activity:\nPress: 1 to view balance, 2 to deposit, 3 to withdraw, 4 to transfer, 5 to view account details, 6 to exit");
             choice = scanner.nextByte();
+            scanner.nextLine(); //consumes \n
+
             switch (choice) {
                 case 1: {
                     loggedInAccount.printBalance();
@@ -170,27 +168,27 @@ class BankAccount {
                 }
                 case 2: {
                     System.out.println("Enter the amount you wish to deposit.");
-                    loggedInAccount.deposit(scanner.nextDouble());
+                    if(loggedInAccount.deposit(scanner.nextDouble())){
+                        System.out.println("Deposit successful! Current balance: "+loggedInAccount.balance);
+                    }else System.out.println("Please enter a valid amount.");
+                    scanner.nextLine();
                     break;
                 }
                 case 3: {
                     System.out.println("Enter the amount you wish to withdraw.");
                     double amount = scanner.nextDouble();
-                    loggedInAccount.withdraw(amount);
+                    scanner.nextLine();
+                    if(loggedInAccount.withdraw(amount)) {System.out.println("You have successfully taken out "+amount+" Eur. Remaining balance: " + loggedInAccount.balance);}
+                    else System.out.println("Insufficient funds. Current balance: " + loggedInAccount.balance);
                     break;
                 }
                 case 4: {
-                     /*   System.out.println("Enter the username of the person you wish to transfer funds to.");
-                        String username= scanner.nextLine();
-                        String accountNumber = account.getAccountNumberByUsername(username);
-                        if (accountNumber != null) {
-                            System.out.println("Found account number: " + accountNumber);
-                        } else {
-                            System.out.println("Account not found.");
-                        }
-                        System.out.println("Enter the amount you wish to transfer.");
-                        double amount=scanner.nextDouble();
-                        accountNumber.transfer(amount,username); break;*/
+                    System.out.println("Enter the username of the person you wish to transfer funds to.");
+                    String username= scanner.nextLine();
+                    System.out.println("Enter the amount you wish to transfer.");
+                    double amount=scanner.nextDouble();
+                    scanner.nextLine(); //consumes \n
+                    loggedInAccount.transfer(amount,username); break;
                 }
                 case 5: {
                     System.out.println("The results: ");
@@ -207,6 +205,9 @@ public class Main {
     public static void main(String[] args) {
         BankAccount loggedInAccount = new BankAccount();
         //      logger.info("Hello World!");
+        BankAccount.addAccount("ash", new BankAccount("ash", "ash1")); //cause why not
+        BankAccount.addAccount("al", new BankAccount("al", "al1")); //cause why not
+        BankAccount.accounts.get("ash").deposit(254);
 
         System.out.println("Welcome! Click 1 to login, click 2 to register, click 3 to exit!");
         Scanner scanner = new Scanner(System.in);
@@ -231,7 +232,6 @@ public class Main {
         }
         if(BankAccount.isLoggedIn){
                 loggedInAccount.menu(scanner, loggedInAccount);}
-       // else System.out.println("No one is logged in.");
-
+        System.out.println("The full account report is: "); loggedInAccount.report(); //this is for testing
      scanner.close();}
     }
